@@ -1,0 +1,8 @@
+<launch>
+    <node name='mav_motion_simulator_node' pkg='mav_fake_simulator' type='mav_fake_simulator.py' output='screen'>
+        <rosparam file="$(find mav_fake_simulator)/resources/mav_fake_simulator.yaml" />
+    </node>
+
+    <node name='mav_test_flight_control_node' pkg='mav_fake_simulator' type='test_flight.py' output='screen'>
+    </node>
+</launch>

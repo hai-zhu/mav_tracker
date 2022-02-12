@@ -1,3 +1,9 @@
 # virtual environment
 .env
 .idea
+
+# cache
+__pycache__/
+
+# external
+external/acados
