@@ -1,6 +1,6 @@
 # simulation param
 sim_dt: 0.01
-time_out: 0.1
+time_out: 0.10
 
 # MAV dynamics param
 mass: 1.56

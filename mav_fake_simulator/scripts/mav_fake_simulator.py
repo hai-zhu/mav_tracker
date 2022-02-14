@@ -30,8 +30,8 @@ class MAV_Fake_Motion_Simulator:
         self.rpy_start_ = np.zeros((3, ))
 
         # MAV simulation dt, current time and state
-        self.sim_dt_ = 0.01
-        self.time_out_ = 0.1
+        self.sim_dt_ = 0.0
+        self.time_out_ = 0.0
         self.time_now_ = 0.0
         self.pos_ = np.zeros((3,))
         self.vel_ = np.zeros((3,))
@@ -47,8 +47,8 @@ class MAV_Fake_Motion_Simulator:
         # ROS subscriber
         self.roll_pitch_yawrate_thrust_sub_ = rospy.Subscriber("/mav_roll_pitch_yawrate_thrust_cmd",
                                                                RollPitchYawrateThrust,
-                                                               self.roll_pitch_yawrate_thrust_callback)
-        self.cmd_received_time_ = -self.time_out_
+                                                               self.roll_pitch_yawrate_thrust_received_callback)
+        self.cmd_received_time_ = -1.0
         # ROS publisher
         self.odom_pub_ = rospy.Publisher("/mav_sim_odom", Odometry, queue_size=1)
         self.odom_msg_ = Odometry()
@@ -94,7 +94,7 @@ class MAV_Fake_Motion_Simulator:
         self.drag_coefficient_x_ = drag_coefficient_x
         self.drag_coefficient_y_ = drag_coefficient_y
 
-    def roll_pitch_yawrate_thrust_callback(self, roll_pitch_yawrate_thrust_msg):
+    def roll_pitch_yawrate_thrust_received_callback(self, roll_pitch_yawrate_thrust_msg):
         self.roll_pitch_yawrate_thrust_cmd_[0] = roll_pitch_yawrate_thrust_msg.roll
         self.roll_pitch_yawrate_thrust_cmd_[1] = roll_pitch_yawrate_thrust_msg.pitch
         self.roll_pitch_yawrate_thrust_cmd_[2] = roll_pitch_yawrate_thrust_msg.yaw_rate
@@ -102,27 +102,32 @@ class MAV_Fake_Motion_Simulator:
         self.cmd_received_time_ = self.time_now_
 
     def step_sim(self):
-        # if time out, try to make the mav hover
+        # if hit ground
+        if self.hit_ground_:  # hit ground
+            print("MAV hits ground!")
+            return
+
+        # if time out, try to make the mav decelerate and hover
         if self.time_now_ - self.cmd_received_time_ >= self.time_out_:
             self.roll_pitch_yawrate_thrust_cmd_.fill(0.0)
-            self.roll_pitch_yawrate_thrust_cmd_[3] = \
-                self.mass_ * g / np.cos(self.rpy_[0]) / np.cos(self.rpy_[1])
+            t_min = 0.5*self.mass_ * g
+            t_max = 1.5*self.mass_ * g
+            self.roll_pitch_yawrate_thrust_cmd_[3] = np.clip(self.mass_ * g - self.vel_[2]/4*g, t_min, t_max)
+
+        pos_vel_rpy_now = np.concatenate((self.pos_, self.vel_, self.rpy_))
+        roll_pitch_yawrate_thrust_now = self.roll_pitch_yawrate_thrust_cmd_
+        param_now = np.array([self.mass_, self.roll_time_constant_, self.roll_gain_,
+                              self.pitch_time_constant_, self.pitch_gain_,
+                              self.drag_coefficient_x_, self.drag_coefficient_y_])
+        pos_vel_rpy_next = my_RK4(pos_vel_rpy_now, roll_pitch_yawrate_thrust_now, self.dynamics_model_,
+                                  self.sim_dt_, param_now)
+        self.pos_ = pos_vel_rpy_next[0:3]
+        self.vel_ = pos_vel_rpy_next[3:6]
+        self.rpy_ = pos_vel_rpy_next[6:9]
+        self.time_now_ += self.sim_dt_
+
         if self.pos_[2] <= 0.1:
             self.hit_ground_ = True
-        if self.hit_ground_:       # hit ground
-            print("MAV hits ground!")
-        else:
-            pos_vel_rpy_now = np.concatenate((self.pos_, self.vel_, self.rpy_))
-            roll_pitch_yawrate_thrust_now = self.roll_pitch_yawrate_thrust_cmd_
-            param_now = np.array([self.mass_, self.roll_time_constant_, self.roll_gain_,
-                                  self.pitch_time_constant_, self.pitch_gain_,
-                                  self.drag_coefficient_x_, self.drag_coefficient_y_])
-            pos_vel_rpy_next = my_RK4(pos_vel_rpy_now, roll_pitch_yawrate_thrust_now, self.dynamics_model_,
-                                      self.sim_dt_, param_now)
-            self.pos_ = pos_vel_rpy_next[0:3]
-            self.vel_ = pos_vel_rpy_next[3:6]
-            self.rpy_ = pos_vel_rpy_next[6:9]
-            self.time_now_ += self.sim_dt_
 
     def pub_sim_cmd(self):
         self.cmd_msg_.header.seq += 1
