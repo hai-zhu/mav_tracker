@@ -12,6 +12,6 @@ drag_coefficient_x: 0.01
 drag_coefficient_y: 0.01
 
 # MAV Initial state
-pos_start: [0.0, 0.0, 1.0]
+pos_start: [5.0, 3.0, 1.0]
 vel_start: [0.0, 0.0, 0.0]
 rpy_start: [0.0, 0.0, 0.0]
