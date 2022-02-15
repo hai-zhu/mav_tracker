@@ -1,6 +1,6 @@
 {
-    "acados_include_path": "/home/hai/Documents/Code/00_Hai/solver_test/external/acados/include",
-    "acados_lib_path": "/home/hai/Documents/Code/00_Hai/solver_test/external/acados/lib",
+    "acados_include_path": "/home/hai/ROS/catkin_ws/src/mav_tracker/external/acados/include",
+    "acados_lib_path": "/home/hai/ROS/catkin_ws/src/mav_tracker/external/acados/lib",
     "code_export_directory": "/home/hai/ROS/catkin_ws/src/mav_tracker/mav_nmpc_tracker/solver/",
     "constraints": {
         "C": [],
