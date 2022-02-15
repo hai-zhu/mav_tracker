@@ -1,3 +1,7 @@
+# MPC formulation setting
+dt: 0.1
+N: 20
+
 # MAV dynamics param
 mass: 1.56
 roll_time_constant: 0.257

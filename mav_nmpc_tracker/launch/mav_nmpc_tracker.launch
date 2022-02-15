@@ -1,0 +1,5 @@
+<launch>
+    <node name='mav_nmpc_tracker_node' pkg='mav_nmpc_tracker' type='nmpc_tracker_node.py' output='screen'>
+        <rosparam file="$(find mav_nmpc_tracker)/resources/nmpc_tracker.yaml" />
+    </node>
+</launch>
