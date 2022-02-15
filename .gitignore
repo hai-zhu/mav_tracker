@@ -6,4 +6,4 @@
 __pycache__/
 
 # external
-external/acados
+#external/acados
