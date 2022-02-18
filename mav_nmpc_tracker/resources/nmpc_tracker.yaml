@@ -24,8 +24,8 @@ r_roll  : 50
 r_pitch : 50
 r_thrust : 1
 
-roll_max: 25.0        # deg
-pitch_max: 25.0       # deg
+roll_max: 15.0        # deg
+pitch_max: 15.0       # deg
 thrust_min: 0.5       # m*g
 thrust_max: 1.5       # m*g
 

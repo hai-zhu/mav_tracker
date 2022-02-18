@@ -140,10 +140,8 @@ def acados_mpc_solver_generation(mpc_form_param):
     ocp.cost.yref_e = np.zeros(ny_e)
 
     # set control bound
-    ocp.constraints.lbu = np.array([-mpc_form_param.roll_max, -mpc_form_param.pitch_max,
-                                    mpc_form_param.thrust_min*mpc_form_param.mass*g])
-    ocp.constraints.ubu = np.array([mpc_form_param.roll_max, mpc_form_param.pitch_max,
-                                    mpc_form_param.thrust_max*mpc_form_param.mass*g])
+    ocp.constraints.lbu = np.array([-mpc_form_param.roll_max, -mpc_form_param.pitch_max, mpc_form_param.thrust_min])
+    ocp.constraints.ubu = np.array([mpc_form_param.roll_max, mpc_form_param.pitch_max, mpc_form_param.thrust_max])
     ocp.constraints.idxbu = np.array(range(nu))
 
     # solver options

@@ -21,7 +21,7 @@ class Mav_Nmpc_Tracker:
         self.mass_ = self.mpc_form_param_.mass
         self.tracking_mode_ = tracking_mode  # track, hover, home
         self.odom_time_out_ = 0.2
-        self.traj_time_out_ = 0.2
+        self.traj_time_out_ = 1.0
 
         # state
         self.mav_state_current_ = np.zeros(9)
@@ -82,13 +82,18 @@ class Mav_Nmpc_Tracker:
 
     def set_traj_ref(self, traj_msg):
         self.traj_received_time_ = rospy.Time.now()
-        for iStage in range(0, self.mpc_N_):
-            self.traj_pos_ref_[0, iStage] = traj_msg.points[iStage].transforms[0].translation.x
-            self.traj_pos_ref_[1, iStage] = traj_msg.points[iStage].transforms[0].translation.y
-            self.traj_pos_ref_[2, iStage] = traj_msg.points[iStage].transforms[0].translation.z
-            self.traj_vel_ref_[0, iStage] = traj_msg.points[iStage].velocities[0].linear.x
-            self.traj_vel_ref_[1, iStage] = traj_msg.points[iStage].velocities[0].linear.y
-            self.traj_vel_ref_[2, iStage] = traj_msg.points[iStage].velocities[0].linear.z
+        try:
+            for iStage in range(0, self.mpc_N_):
+                self.traj_pos_ref_[0, iStage] = traj_msg.points[iStage].transforms[0].translation.x
+                self.traj_pos_ref_[1, iStage] = traj_msg.points[iStage].transforms[0].translation.y
+                self.traj_pos_ref_[2, iStage] = traj_msg.points[iStage].transforms[0].translation.z
+                self.traj_vel_ref_[0, iStage] = traj_msg.points[iStage].velocities[0].linear.x
+                self.traj_vel_ref_[1, iStage] = traj_msg.points[iStage].velocities[0].linear.y
+                self.traj_vel_ref_[2, iStage] = traj_msg.points[iStage].velocities[0].linear.z
+        except:
+            rospy.logwarn('Received commanded trajectory incorrect! Will try to hover')
+            self.traj_pos_ref_ = np.tile(self.mav_state_current_[0:3].reshape((-1, 1)), (1, self.mpc_N_))
+            self.traj_vel_ref_ = np.tile(np.array([0.0, 0.0, 0.0]).reshape((-1, 1)), (1, self.mpc_N_))
 
     def set_mpc_ref(self, mode):
         if mode == 'track':  # trajectory tracking
@@ -96,7 +101,7 @@ class Mav_Nmpc_Tracker:
             self.mpc_vel_ref_ = self.traj_vel_ref_
         elif mode == 'hover':  # hovering
             self.mpc_pos_ref_ = np.tile(self.mav_state_current_[0:3].reshape((-1, 1)), (1, self.mpc_N_))
-            self.mpc_vel_ref_ = np.tile(self.mav_state_current_[3:6].reshape((-1, 1)), (1, self.mpc_N_))
+            self.mpc_vel_ref_ = np.tile(np.array([0.0, 0.0, 0.0]).reshape((-1, 1)), (1, self.mpc_N_))
         elif mode == 'home':  # flying to origin
             self.mpc_pos_ref_ = np.tile(np.array([0.0, 0.0, 1.0]).reshape((-1, 1)), (1, self.mpc_N_))
             self.mpc_vel_ref_ = np.tile(np.array([0.0, 0.0, 0.0]).reshape((-1, 1)), (1, self.mpc_N_))
@@ -165,14 +170,14 @@ class Mav_Nmpc_Tracker:
             self.mpc_feasible_ = True
 
         solver_time = (rospy.get_rostime() - time_before_solver).to_sec() * 1000.0
-        rospy.loginfo('MPC computation time is: %s ms.', solver_time)
+        # rospy.loginfo('MPC computation time is: %s ms.', solver_time)
 
         # obtain solution
         for iStage in range(0, self.mpc_N_):
             self.mpc_x_plan_[:, iStage] = self.mpc_solver_.get(iStage, 'x')
             self.mpc_u_plan_[:, iStage] = self.mpc_solver_.get(iStage, 'u')
         self.mpc_x_next_ = self.mpc_x_plan_[:, 1]
-        self.mpc_u_now_ = self.mpc_u_plan_[:, 1]
+        self.mpc_u_now_ = self.mpc_u_plan_[:, 0]
 
     def calculate_roll_pitch_yawrate_thrust_cmd(self):
         # if odom and traj command received
@@ -243,10 +248,10 @@ def nmpc_tracker_control():
     mpc_form_param.drag_coefficient_x = rospy.get_param("~drag_coefficient_x")
     mpc_form_param.drag_coefficient_y = rospy.get_param("~drag_coefficient_y")
     # control bound
-    mpc_form_param.roll_max = rospy.get_param("~roll_max")
-    mpc_form_param.pitch_max = rospy.get_param("~pitch_max")
-    mpc_form_param.thrust_min = rospy.get_param("~thrust_min")
-    mpc_form_param.thrust_max = rospy.get_param("~thrust_max")
+    mpc_form_param.roll_max = np.deg2rad(rospy.get_param("~roll_max"))
+    mpc_form_param.pitch_max = np.deg2rad(rospy.get_param("~pitch_max"))
+    mpc_form_param.thrust_min = rospy.get_param("~thrust_min") * mpc_form_param.mass * g
+    mpc_form_param.thrust_max = rospy.get_param("~thrust_max") * mpc_form_param.mass * g
     # cost weights
     mpc_form_param.q_x = rospy.get_param("~q_x")
     mpc_form_param.q_y = rospy.get_param("~q_y")
