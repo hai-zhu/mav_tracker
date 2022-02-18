@@ -67,8 +67,8 @@ OBJ+= $(OCP_OBJ)
 EXTERNAL_DIR=
 EXTERNAL_LIB=
 
-INCLUDE_PATH = /home/hai/ROS/catkin_ws/src/mav_tracker/external/acados/include
-LIB_PATH = /home/hai/ROS/catkin_ws/src/mav_tracker/external/acados/lib
+INCLUDE_PATH = /home/hai/Documents/Code/00_Hai/solver_test/external/acados/include
+LIB_PATH = /home/hai/Documents/Code/00_Hai/solver_test/external/acados/lib
 all: clean casadi_fun example_sim example
 shared_lib: bundled_shared_lib ocp_shared_lib sim_shared_lib
 

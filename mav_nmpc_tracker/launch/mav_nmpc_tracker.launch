@@ -1,5 +1,7 @@
 <launch>
+    <arg name='tracking_mode' default='hover'/>
     <node name='mav_nmpc_tracker_node' pkg='mav_nmpc_tracker' type='nmpc_tracker_node.py' output='screen'>
         <rosparam file="$(find mav_nmpc_tracker)/resources/nmpc_tracker.yaml" />
+        <param name='tracking_mode' value='$(arg tracking_mode)'/>
     </node>
 </launch>

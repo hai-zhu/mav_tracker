@@ -109,10 +109,20 @@ class MAV_Fake_Motion_Simulator:
 
         # if time out, try to make the mav decelerate and hover
         if self.time_now_ - self.cmd_received_time_ >= self.time_out_:
-            self.roll_pitch_yawrate_thrust_cmd_.fill(0.0)
-            t_min = 0.5*self.mass_ * g
-            t_max = 1.5*self.mass_ * g
-            self.roll_pitch_yawrate_thrust_cmd_[3] = np.clip(self.mass_ * g - self.vel_[2]/4*g, t_min, t_max)
+            yaw = self.rpy_[2]
+            vx = self.vel_[0]
+            vy = self.vel_[1]
+            vx_B = vx*np.cos(yaw) + vy*np.sin(yaw)
+            vy_B = -vx*np.sin(yaw) + vy*np.cos(yaw)
+            # roll cmd
+            self.roll_pitch_yawrate_thrust_cmd_[0] = np.clip(vy_B, -np.deg2rad(15), np.deg2rad(15))
+            # pitch cmd
+            self.roll_pitch_yawrate_thrust_cmd_[1] = np.clip(-vx_B, -np.deg2rad(15), np.deg2rad(15))
+            # yawrate cmd
+            self.roll_pitch_yawrate_thrust_cmd_[2] = 0.0
+            # thrust cmd
+            self.roll_pitch_yawrate_thrust_cmd_[3] = np.clip(self.mass_ * g - self.vel_[2]/4*g,
+                                                             0.5*self.mass_ * g, 1.5*self.mass_ * g)
 
         pos_vel_rpy_now = np.concatenate((self.pos_, self.vel_, self.rpy_))
         roll_pitch_yawrate_thrust_now = self.roll_pitch_yawrate_thrust_cmd_
