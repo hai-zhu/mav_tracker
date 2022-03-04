@@ -79,6 +79,8 @@ def acados_mpc_solver_generation(mpc_form_param):
     yaw_dot = cd.MX.sym('yaw_dot')
     x_dot = cd.vertcat(px_dot, py_dot, pz_dot, vx_dot, vy_dot, vz_dot, roll_dot, pitch_dot, yaw_dot)
 
+    # TODO: drag
+
     # dynamics
     dyn_f_expl = cd.vertcat(
         vx,

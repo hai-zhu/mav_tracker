@@ -8,3 +8,5 @@ __pycache__/
 # external
 external/acados
 external/acados.zip
+
+mav_fake_simulator/identification/raw/
