@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from tkinter import N
 import numpy as np
 import rospy
 import tf
