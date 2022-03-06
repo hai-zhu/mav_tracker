@@ -1,0 +1,17 @@
+# simulation param
+sim_dt: 0.01
+time_out: 0.10
+
+# MAV dynamics param
+mass: 1.56
+roll_time_constant: 0.3256
+roll_gain: 1.0234
+pitch_time_constant: 0.3249
+pitch_gain: 1.0266
+drag_coefficient_x: 0.01
+drag_coefficient_y: 0.01
+
+# MAV Initial state
+pos_start: [0.0, 0.0, 1.0]
+vel_start: [0.0, 0.0, 0.0]
+rpy_start: [0.0, 0.0, 0.0]

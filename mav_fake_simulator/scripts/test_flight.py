@@ -31,7 +31,7 @@ def test_flight_roll():
         cmd_msg.yaw_rate = 0.0
         cmd_msg.thrust.x = 0.0
         cmd_msg.thrust.y = 0.0
-        cmd_msg.thrust.z = 1.004*MASS * G
+        cmd_msg.thrust.z = 1.006*MASS * G
         cmd_pub.publish(cmd_msg)
         idx += 1
         rate.sleep()

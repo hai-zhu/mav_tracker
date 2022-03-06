@@ -1,5 +1,5 @@
 <launch>
     <node name='mav_motion_simulator_node' pkg='mav_fake_simulator' type='mav_fake_simulator.py' output='screen'>
-        <rosparam file="$(find mav_fake_simulator)/resources/mav_fake_simulator.yaml" />
+        <rosparam file="$(find mav_fake_simulator)/config/mav_fake_simulator.yaml" />
     </node>
 </launch>

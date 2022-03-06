@@ -1,0 +1,5 @@
+Topic list:
+1. Odometry: /mavros/local_position/odom
+2. Trajectory command to MPC: /command/trajectory
+3. Attitude commands from PID tracker: /mavros/setpoint_raw/attitude
+4. Path visualization message: /visualization_marker /traj_opt/corridors /colored_trajectory

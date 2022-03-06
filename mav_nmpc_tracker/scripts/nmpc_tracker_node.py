@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
+from tkinter import N
 import numpy as np
 import rospy
 import tf
 from nav_msgs.msg import Odometry
 from mav_msgs.msg import RollPitchYawrateThrust
 from trajectory_msgs.msg import MultiDOFJointTrajectory
+from geometry_msgs.msg import Point
+from visualization_msgs.msg import Marker
 from nmpc_tracker_solver import MPC_Formulation_Param
 from nmpc_tracker_solver import acados_mpc_solver_generation
 
@@ -19,6 +22,7 @@ class Mav_Nmpc_Tracker:
 
         # mav mass, and settins
         self.mass_ = self.mpc_form_param_.mass
+        self.thrust_scale_ = self.mpc_form_param_.thrust_scale
         self.tracking_mode_ = tracking_mode  # track, hover, home
         self.odom_time_out_ = 0.2
         self.traj_time_out_ = 1.0
@@ -45,12 +49,13 @@ class Mav_Nmpc_Tracker:
         self.mpc_x_next_ = np.zeros(self.mpc_nx_)
         self.mpc_u_now_ = np.zeros(self.mpc_nu_)
         self.mpc_feasible_ = False
+        self.mpc_success_ = False
 
         # MPC solver
         self.mpc_solver_ = acados_mpc_solver_generation(self.mpc_form_param_)
 
         # ROS subscriber
-        self.odom_sub_ = rospy.Subscriber("/mav_sim_odom", Odometry, self.set_odom)
+        self.odom_sub_ = rospy.Subscriber("/mavros/local_position/odom", Odometry, self.set_odom)
         self.received_first_odom_ = False
         self.odom_received_time_ = rospy.Time.now()
         self.traj_sub_ = rospy.Subscriber("/command/trajectory", MultiDOFJointTrajectory, self.set_traj_ref)
@@ -59,8 +64,9 @@ class Mav_Nmpc_Tracker:
         self.traj_vel_ref_ = np.zeros((3, self.mpc_N_))
 
         # ROS publisher
-        self.roll_pitch_yawrate_thrust_pub_ = rospy.Publisher("/mav_roll_pitch_yawrate_thrust_cmd",
+        self.roll_pitch_yawrate_thrust_cmd_pub_ = rospy.Publisher("/mav_roll_pitch_yawrate_thrust_cmd",
                                                               RollPitchYawrateThrust, queue_size=1)
+        self.mpc_traj_plan_vis_pub_ = rospy.Publisher("/mpc/trajectory_plan_vis", Marker, queue_size=1)
 
     def set_odom(self, odom_msg):
         if self.received_first_odom_ is False:
@@ -156,21 +162,25 @@ class Mav_Nmpc_Tracker:
         # deal with infeasibility
         if solver_status != 0:  # if infeasible
             self.mpc_feasible_ = False
+            self.mpc_success_ = False 
             rospy.logwarn("MPC infeasible, will try again.")
             # solve again
             self.reset_acados_solver()
             solver_status_alt = self.mpc_solver_.solve()
             if solver_status_alt != 0:  # if infeasible again
                 self.mpc_feasible_ = False
+                self.mpc_success_ = False
                 rospy.logwarn("MPC infeasible again.")
                 return
             else:
                 self.mpc_feasible_ = True
+                self.mpc_success_ = True 
         else:
             self.mpc_feasible_ = True
+            self.mpc_success_ = True 
 
         solver_time = (rospy.get_rostime() - time_before_solver).to_sec() * 1000.0
-        # rospy.loginfo('MPC computation time is: %s ms.', solver_time)
+        rospy.loginfo('MPC computation time is: %s ms.', solver_time)
 
         # obtain solution
         for iStage in range(0, self.mpc_N_):
@@ -195,14 +205,14 @@ class Mav_Nmpc_Tracker:
             self.run_acados_solver()
 
         # control commands
-        if self.mpc_feasible_ is True:
+        if self.mpc_success_ is True:
             roll_cmd = self.mpc_u_now_[0]
             pitch_cmd = self.mpc_u_now_[1]
-            thrust_cmd = self.mpc_u_now_[2]
+            thrust_cmd = self.mpc_u_now_[2]*self.mass_/self.thrust_scale_
         else:
             roll_cmd = 0.0
             pitch_cmd = 0.0
-            thrust_cmd = g*self.mass_
+            thrust_cmd = g*self.mass_/self.thrust_scale_
 
         # TODO: yaw controller
         yawrate_cmd = 0.0
@@ -211,22 +221,60 @@ class Mav_Nmpc_Tracker:
         self.mav_control_current_ = np.array([roll_cmd, pitch_cmd, yawrate_cmd, thrust_cmd])
 
     def pub_roll_pitch_yawrate_thrust_cmd(self):
-        cmd_msg = RollPitchYawrateThrust()
-        cmd_msg.header.stamp = rospy.get_rostime()
-        cmd_msg.roll = self.mav_control_current_[0]
-        cmd_msg.pitch = self.mav_control_current_[1]
-        cmd_msg.yaw_rate = self.mav_control_current_[2]
-        cmd_msg.thrust.x = 0.0
-        cmd_msg.thrust.y = 0.0
-        cmd_msg.thrust.z = self.mav_control_current_[3]
-        self.roll_pitch_yawrate_thrust_pub_.publish(cmd_msg)
+        try: 
+            cmd_msg = RollPitchYawrateThrust()
+            cmd_msg.header.stamp = rospy.get_rostime()
+            cmd_msg.roll = self.mav_control_current_[0]
+            cmd_msg.pitch = self.mav_control_current_[1]
+            cmd_msg.yaw_rate = self.mav_control_current_[2]
+            cmd_msg.thrust.x = 0.0
+            cmd_msg.thrust.y = 0.0
+            cmd_msg.thrust.z = self.mav_control_current_[3]
+            self.roll_pitch_yawrate_thrust_cmd_pub_.publish(cmd_msg)
+        except:
+            rospy.logwarn('MAV command not published!')
+
+
+    def pub_mpc_traj_plan_vis(self):
+        try:
+            marker_msg = Marker()
+            marker_msg.header.frame_id = "map"
+            marker_msg.header.stamp = rospy.Time.now()
+            marker_msg.type = 8
+            marker_msg.action = 0
+            # set the scale of the marker
+            marker_msg.scale.x = 0.2
+            marker_msg.scale.y = 0.2
+            marker_msg.scale.z = 0.2
+            # set the color
+            marker_msg.color.r = 1.0
+            marker_msg.color.g = 0.0
+            marker_msg.color.b = 0.0
+            marker_msg.color.a = 1.0
+            # Set the pose of the marker
+            marker_msg.pose.position.x =  0.0
+            marker_msg.pose.position.y =  0.0
+            marker_msg.pose.position.z =  0.0
+            marker_msg.pose.orientation.x = 0
+            marker_msg.pose.orientation.y = 0
+            marker_msg.pose.orientation.z = 0
+            marker_msg.pose.orientation.w = 1.0
+            # points
+            mpc_traj_plan_points = []
+            for iStage in range(0, self.mpc_N_):
+                point = Point(self.mpc_x_plan_[0, iStage], self.mpc_x_plan_[1, iStage], self.mpc_x_plan_[2, iStage])
+                mpc_traj_plan_points.append(point)
+            marker_msg.points = mpc_traj_plan_points
+            self.mpc_traj_plan_vis_pub_.publish(marker_msg)
+        except:
+            rospy.logwarn("MPC trajectory plan not published!")
 
 
 def nmpc_tracker_control():
     # create a node
     rospy.loginfo("Starting NMPC tracking...")
     rospy.init_node("mav_nmpc_tracker_node", anonymous=False)
-    hz = 50
+    hz = 40
     dt = 1.0 / hz
     rate = rospy.Rate(hz)
     rospy.sleep(1.0)
@@ -234,6 +282,7 @@ def nmpc_tracker_control():
     # fetch param
     # tracking mode
     tracking_mode = rospy.get_param("~tracking_mode")
+    rospy.loginfo('The running mode is: %s.', tracking_mode)
     # horizon
     mpc_form_param = MPC_Formulation_Param()
     mpc_form_param.dt = rospy.get_param("~dt")
@@ -241,6 +290,7 @@ def nmpc_tracker_control():
     mpc_form_param.Tf = mpc_form_param.N * mpc_form_param.dt
     # mav dynamics
     mpc_form_param.mass = rospy.get_param("~mass")
+    mpc_form_param.thrust_scale = rospy.get_param("~thrust_scale")
     mpc_form_param.roll_time_constant = rospy.get_param("~roll_time_constant")
     mpc_form_param.roll_gain = rospy.get_param("~roll_gain")
     mpc_form_param.pitch_time_constant = rospy.get_param("~pitch_time_constant")
@@ -272,6 +322,7 @@ def nmpc_tracker_control():
         else:
             nmpc_tracker.calculate_roll_pitch_yawrate_thrust_cmd()
             nmpc_tracker.pub_roll_pitch_yawrate_thrust_cmd()
+            nmpc_tracker.pub_mpc_traj_plan_vis()
         rate.sleep()
 
 

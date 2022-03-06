@@ -13,7 +13,7 @@ catkin_make
 Install dependencies:
 ```cmd
 cd ~/catkin_ws/src
-git clone https://github.com/ethz-asl/mav_comm
+git clone https://github.com/ethz-asl/mav_comm.git
 cd ..
 catkin_make
 ```
@@ -21,13 +21,13 @@ catkin_make
 Clone the repository:
 ```cmd
 cd ~/catkin_ws/src
-git clone https://github.com/hai-zhu/mav_tracker
+git clone https://github.com/hai-zhu/mav_tracker.git
 ```
 
 ## Install acados
 ```cmd
 cd ~/catkin_ws/src/mav_tracker/external
-git clone https://github.com/acados/acados
+git clone https://github.com/acados/acados.git
 cd acados
 git checkout 16f677a716ea4abc06b88b1cad7bb433512d66db
 git submodule update --recursive --init
@@ -48,7 +48,8 @@ pip install -e external/acados/interfaces/acados_template/
 pip install pyyaml rospkg
 cd ~/catkin_ws
 catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3
-souce devel/setup.bash
+catkin_make 
+source devel/setup.bash
 ```
 
 To use the tracker

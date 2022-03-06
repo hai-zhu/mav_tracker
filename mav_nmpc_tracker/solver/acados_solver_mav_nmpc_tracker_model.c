@@ -325,7 +325,7 @@ int mav_nmpc_tracker_model_acados_create_with_discretization(mav_nmpc_tracker_mo
     if (new_time_steps) {
         mav_nmpc_tracker_model_acados_update_time_steps(capsule, N, new_time_steps);
     } else {// all time_steps are identical
-        double time_step = 0.1;
+        double time_step = 0.05;
         for (int i = 0; i < N; i++)
         {
             ocp_nlp_in_set(nlp_config, nlp_dims, nlp_in, i, "Ts", &time_step);
@@ -540,10 +540,10 @@ int mav_nmpc_tracker_model_acados_create_with_discretization(mav_nmpc_tracker_mo
     double* lbu = lubu;
     double* ubu = lubu + NBU;
     
-    lbu[0] = -0.2617993877991494;
-    ubu[0] = 0.2617993877991494;
-    lbu[1] = -0.2617993877991494;
-    ubu[1] = 0.2617993877991494;
+    lbu[0] = -0.4363323129985824;
+    ubu[0] = 0.4363323129985824;
+    lbu[1] = -0.4363323129985824;
+    ubu[1] = 0.4363323129985824;
     lbu[2] = 7.649148;
     ubu[2] = 22.947443999999997;
 

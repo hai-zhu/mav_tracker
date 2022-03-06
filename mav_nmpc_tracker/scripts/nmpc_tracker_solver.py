@@ -15,23 +15,25 @@ g = 9.8066
 
 @dataclass
 class MPC_Formulation_Param:
+    # The following are by default, can be changed later
+    mass = 1.56
+    thrust_scale = 20.0
     # horizon
-    dt = 0.1
+    dt = 0.05
     N = 20
     Tf = N * dt
     # dynamics
-    mass = 1.56
-    roll_time_constant = 0.257
-    roll_gain = 0.75
-    pitch_time_constant = 0.259
-    pitch_gain = 0.78
+    roll_time_constant = 0.3
+    roll_gain = 1.0
+    pitch_time_constant = 0.3
+    pitch_gain = 1.0
     drag_coefficient_x = 0.01
     drag_coefficient_y = 0.01
     # control bound
     roll_max = np.deg2rad(25)
     pitch_max = np.deg2rad(25)
-    thrust_min = 0.5 * mass * g
-    thrust_max = 1.5 * mass * g
+    thrust_min = 0.5 * g            # mass divided
+    thrust_max = 1.5 * g
     # cost weights
     q_x = 80
     q_y = 80
@@ -64,7 +66,7 @@ def acados_mpc_solver_generation(mpc_form_param):
     # control
     roll_cmd = cd.MX.sym('roll_cmd')
     pitch_cmd = cd.MX.sym('pitch_cmd')
-    thrust_cmd = cd.MX.sym('thrust_cmd')
+    thrust_cmd = cd.MX.sym('thrust_cmd')        # mass divided
     u = cd.vertcat(roll_cmd, pitch_cmd, thrust_cmd)
 
     # state derivative
@@ -79,16 +81,23 @@ def acados_mpc_solver_generation(mpc_form_param):
     yaw_dot = cd.MX.sym('yaw_dot')
     x_dot = cd.vertcat(px_dot, py_dot, pz_dot, vx_dot, vy_dot, vz_dot, roll_dot, pitch_dot, yaw_dot)
 
-    # TODO: drag
+    # drag
+    drag_acc_x = np.cos(pitch)*np.cos(yaw)*mpc_form_param.drag_coefficient_x*thrust_cmd*vx \
+                 - np.cos(pitch)*np.sin(yaw)*mpc_form_param.drag_coefficient_x*thrust_cmd*vy \
+                 + np.sin(pitch)*mpc_form_param.drag_coefficient_x*thrust_cmd*vz
+    drag_acc_y = (np.cos(roll)*np.sin(yaw) - np.cos(yaw)*np.sin(pitch)*np.sin(roll))*mpc_form_param.drag_coefficient_y*thrust_cmd*vx \
+                 - (np.cos(roll)*np.cos(yaw) + np.sin(pitch)*np.sin(roll)*np.sin(yaw))*mpc_form_param.drag_coefficient_y*thrust_cmd*vy \
+                 - np.cos(pitch)*np.sin(roll)*mpc_form_param.drag_coefficient_y*thrust_cmd*vz
+
 
     # dynamics
     dyn_f_expl = cd.vertcat(
         vx,
         vy,
         vz,
-        (cd.cos(roll) * cd.cos(yaw) * cd.sin(pitch) + cd.sin(roll) * cd.sin(yaw)) * thrust_cmd / mpc_form_param.mass,
-        (cd.cos(roll) * cd.sin(pitch) * cd.sin(yaw) - cd.cos(yaw) * cd.sin(roll)) * thrust_cmd / mpc_form_param.mass,
-        -g + cd.cos(pitch) * cd.cos(roll) * thrust_cmd / mpc_form_param.mass,
+        (cd.cos(roll) * cd.cos(yaw) * cd.sin(pitch) + cd.sin(roll) * cd.sin(yaw)) * thrust_cmd  - drag_acc_x,
+        (cd.cos(roll) * cd.sin(pitch) * cd.sin(yaw) - cd.cos(yaw) * cd.sin(roll)) * thrust_cmd  - drag_acc_y,
+        -g + cd.cos(pitch) * cd.cos(roll) * thrust_cmd,
         (mpc_form_param.roll_gain * roll_cmd - roll) / mpc_form_param.roll_time_constant,
         (mpc_form_param.pitch_gain * pitch_cmd - pitch) / mpc_form_param.pitch_time_constant,
         0

@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
         nav_msgs
         mav_msgs
         tf
-        )
+)
 
 catkin_python_setup()
 

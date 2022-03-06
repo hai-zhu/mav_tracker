@@ -1,6 +1,7 @@
 # virtual environment
 .env
 .idea
+.vscode
 
 # cache
 __pycache__/
@@ -10,3 +11,5 @@ external/acados
 external/acados.zip
 
 mav_fake_simulator/identification/raw/
+
+*.zip

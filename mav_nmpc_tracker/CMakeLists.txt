@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
         mav_msgs
         tf
         trajectory_msgs
+        visualization_msgs
         )
 
 catkin_python_setup()

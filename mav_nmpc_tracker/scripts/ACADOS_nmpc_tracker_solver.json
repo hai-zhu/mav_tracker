@@ -1,7 +1,7 @@
 {
-    "acados_include_path": "/home/hai/ROS/catkin_ws/src/mav_tracker/external/acados/include",
-    "acados_lib_path": "/home/hai/ROS/catkin_ws/src/mav_tracker/external/acados/lib",
-    "code_export_directory": "/home/hai/ROS/catkin_ws/src/mav_tracker/mav_nmpc_tracker/solver/",
+    "acados_include_path": "/home/hai/ROS/mav_navi_ws/src/mav_tracker/external/acados/include",
+    "acados_lib_path": "/home/hai/ROS/mav_navi_ws/src/mav_tracker/external/acados/lib",
+    "code_export_directory": "/home/hai/ROS/mav_navi_ws/src/mav_tracker/mav_nmpc_tracker/solver/",
     "constraints": {
         "C": [],
         "C_e": [],
@@ -47,9 +47,9 @@
         "idxsphi": [],
         "idxsphi_e": [],
         "lbu": [
-            -25.0,
-            -25.0,
-            7.649148
+            -0.4363323129985824,
+            -0.4363323129985824,
+            4.9033
         ],
         "lbx": [],
         "lbx_0": [
@@ -80,9 +80,9 @@
         "lsphi": [],
         "lsphi_e": [],
         "ubu": [
-            25.0,
-            25.0,
-            22.947443999999997
+            0.4363323129985824,
+            0.4363323129985824,
+            14.7099
         ],
         "ubx": [],
         "ubx_0": [
@@ -865,7 +865,7 @@
         "samplingtime": "t0"
     },
     "solver_options": {
-        "Tsim": 0.1,
+        "Tsim": 0.05,
         "alpha_min": 0.05,
         "alpha_reduction": 0.7,
         "collocation_type": "GAUSS_LEGENDRE",
@@ -964,28 +964,28 @@
             3,
             3
         ],
-        "tf": 2.0,
+        "tf": 1.0,
         "time_steps": [
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05,
+            0.05
         ]
     }
 }
