@@ -221,6 +221,7 @@ class Mav_Nmpc_Tracker:
             pitch_cmd = self.mpc_u_now_[1]
             thrust_cmd = self.mpc_u_now_[2]*self.mass_/self.thrust_scale_
         else:
+            rospy.logwarn('MPC failure! Default commands sent.')
             roll_cmd = 0.0
             pitch_cmd = 0.0
             thrust_cmd = 1.0*g*self.mass_/self.thrust_scale_
