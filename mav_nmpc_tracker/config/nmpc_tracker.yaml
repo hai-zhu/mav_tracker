@@ -9,8 +9,8 @@ roll_time_constant: 0.3256
 roll_gain: 1.0234
 pitch_time_constant: 0.3249
 pitch_gain: 1.0266
-drag_coefficient_x: 0.005
-drag_coefficient_y: 0.005
+drag_coefficient_x: 0.001
+drag_coefficient_y: 0.001
 
 # dynamic config default values
 q_x : 80
@@ -29,3 +29,6 @@ roll_max: 25.0        # deg
 pitch_max: 25.0       # deg
 thrust_min: 0.5       # m*g
 thrust_max: 1.5       # m*g
+
+K_yaw: 1.8
+yawrate_max: 90.0     # deg

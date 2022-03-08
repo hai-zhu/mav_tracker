@@ -13,3 +13,4 @@ external/acados.zip
 mav_fake_simulator/identification/raw/
 
 *.zip
+*.bag

@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         nav_msgs
         mav_msgs
+        mavros_msgs
         tf
         trajectory_msgs
         visualization_msgs
