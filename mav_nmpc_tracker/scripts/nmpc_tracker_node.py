@@ -123,7 +123,7 @@ class Mav_Nmpc_Tracker:
             self.mpc_vel_ref_ = np.tile(np.array([0.0, 0.0, 0.0]).reshape((-1, 1)), (1, self.mpc_N_))
         else:
             rospy.logwarn('Tracking mode is not correctly set!')
-        self.mpc_u_ref_ = np.tile(np.array([0.0, 0.0, g]).reshape((-1, 1)), (1, self.mpc_N_))
+        self.mpc_u_ref_ = np.tile(np.array([0.0, 0.0, 1.0*g]).reshape((-1, 1)), (1, self.mpc_N_))
 
     def reset_acados_solver(self):
         # initial condition
@@ -132,7 +132,7 @@ class Mav_Nmpc_Tracker:
         # initialize plan
         for iStage in range(0, self.mpc_N_):
             self.mpc_solver_.set(iStage, 'x', self.mav_state_current_)
-            self.mpc_solver_.set(iStage, 'u', np.array([0.0, 0.0, g * self.mass_]))
+            self.mpc_solver_.set(iStage, 'u', np.array([0.0, 0.0, 1.0*g]))
 
     def initialize_acados_solver(self):
         # initial condition
@@ -223,7 +223,7 @@ class Mav_Nmpc_Tracker:
         else:
             roll_cmd = 0.0
             pitch_cmd = 0.0
-            thrust_cmd = g*self.mass_/self.thrust_scale_
+            thrust_cmd = 1.0*g*self.mass_/self.thrust_scale_
 
         # yaw controller
         current_yaw = self.mav_state_current_[8]
@@ -239,11 +239,11 @@ class Mav_Nmpc_Tracker:
         yawrate_cmd = self.mpc_form_param_.K_yaw * yaw_error
 
         # clip
-        roll_cmd = np.clip(roll_cmd, -self.mpc_form_param_.roll_max, self.mpc_form_param_.roll_max)
-        pitch_cmd = np.clip(pitch_cmd, -self.mpc_form_param_.pitch_max, self.mpc_form_param_.pitch_max)
-        yawrate_cmd = np.clip(yawrate_cmd, -self.mpc_form_param_.yawrate_max, self.mpc_form_param_.yawrate_max)
-        thrust_cmd = np.clip(thrust_cmd, self.mpc_form_param_.thrust_min*self.mass_/self.thrust_scale_, \
-            self.mpc_form_param_.thrust_max*self.mass_/self.thrust_scale_)
+        # roll_cmd = np.clip(roll_cmd, -self.mpc_form_param_.roll_max, self.mpc_form_param_.roll_max)
+        # pitch_cmd = np.clip(pitch_cmd, -self.mpc_form_param_.pitch_max, self.mpc_form_param_.pitch_max)
+        # yawrate_cmd = np.clip(yawrate_cmd, -self.mpc_form_param_.yawrate_max, self.mpc_form_param_.yawrate_max)
+        # thrust_cmd = np.clip(thrust_cmd, self.mpc_form_param_.thrust_min*self.mass_/self.thrust_scale_, \
+        #     self.mpc_form_param_.thrust_max*self.mass_/self.thrust_scale_)
 
         # obtained command
         self.roll_pitch_yawrate_thrust_cmd_ = np.array([roll_cmd, pitch_cmd, yawrate_cmd, thrust_cmd])
