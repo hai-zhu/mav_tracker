@@ -4,7 +4,7 @@ N: 20
 
 # MAV dynamics param
 mass: 1.56
-thrust_scale: 21.5
+thrust_scale: 20
 roll_time_constant: 0.3256
 roll_gain: 1.0234
 pitch_time_constant: 0.3249

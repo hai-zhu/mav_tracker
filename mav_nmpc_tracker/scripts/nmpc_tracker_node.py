@@ -70,7 +70,7 @@ class Mav_Nmpc_Tracker:
 
         # ROS publisher
         self.roll_pitch_yawrate_thrust_cmd_ = np.array(4)
-        self.roll_pitch_yawrate_thrust_cmd_pub_ = rospy.Publisher("/mav_roll_pitch_yawrate_thrust_cmd", \
+        self.roll_pitch_yawrate_thrust_cmd_pub_ = rospy.Publisher("/mavros/setpoint_raw/roll_pitch_yawrate_thrust", \
             RollPitchYawrateThrust, queue_size=1)
         self.roll_pitch_yaw_thrust_cmd_ = np.array(4) 
         self.roll_pitch_yaw_thrust_cmd_pub_ = rospy.Publisher("/mav_roll_pitch_yaw_thrust_cmd", \

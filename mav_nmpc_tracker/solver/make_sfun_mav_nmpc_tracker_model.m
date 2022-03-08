@@ -38,7 +38,7 @@ SOURCES = { ...
             'acados_solver_mav_nmpc_tracker_model.c'
           };
 
-INC_PATH = '/home/hai/ROS/mav_navi_ws/src/mav_tracker/external/acados/include';
+INC_PATH = '/home/clarence/ros_ws/nmpc_ws/src/mav_tracker/external/acados/include';
 
 INCS = {['-I', fullfile(INC_PATH, 'blasfeo', 'include')], ...
         ['-I', fullfile(INC_PATH, 'hpipm', 'include')], ...
@@ -58,7 +58,7 @@ COMPDEFINES = 'COMPDEFINES=$COMPDEFINES';
 CFLAGS = [ CFLAGS, ' -DACADOS_WITH_QPOASES ' ];
 COMPDEFINES = [ COMPDEFINES, ' -DACADOS_WITH_QPOASES ' ];
 
-LIB_PATH = ['-L', fullfile('/home/hai/ROS/mav_navi_ws/src/mav_tracker/external/acados/lib')];
+LIB_PATH = ['-L', fullfile('/home/clarence/ros_ws/nmpc_ws/src/mav_tracker/external/acados/lib')];
 
 LIBS = {'-lacados', '-lhpipm', '-lblasfeo'};
 
