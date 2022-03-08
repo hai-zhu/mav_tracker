@@ -123,7 +123,7 @@ class Mav_Nmpc_Tracker:
             self.mpc_vel_ref_ = np.tile(np.array([0.0, 0.0, 0.0]).reshape((-1, 1)), (1, self.mpc_N_))
         else:
             rospy.logwarn('Tracking mode is not correctly set!')
-        self.mpc_u_ref_ = np.tile(np.array([0.0, 0.0, g]).reshape((-1, 1)), (1, self.mpc_N_))
+        self.mpc_u_ref_ = np.tile(np.array([0.0, 0.0, 1.0*g]).reshape((-1, 1)), (1, self.mpc_N_))
 
     def reset_acados_solver(self):
         # initial condition
@@ -132,7 +132,7 @@ class Mav_Nmpc_Tracker:
         # initialize plan
         for iStage in range(0, self.mpc_N_):
             self.mpc_solver_.set(iStage, 'x', self.mav_state_current_)
-            self.mpc_solver_.set(iStage, 'u', np.array([0.0, 0.0, g * self.mass_]))
+            self.mpc_solver_.set(iStage, 'u', np.array([0.0, 0.0, 1.0*g]))
 
     def initialize_acados_solver(self):
         # initial condition
@@ -221,9 +221,10 @@ class Mav_Nmpc_Tracker:
             pitch_cmd = self.mpc_u_now_[1]
             thrust_cmd = self.mpc_u_now_[2]*self.mass_/self.thrust_scale_
         else:
+            rospy.logwarn('MPC failure! Default commands sent.')
             roll_cmd = 0.0
             pitch_cmd = 0.0
-            thrust_cmd = g*self.mass_/self.thrust_scale_
+            thrust_cmd = 1.0*g*self.mass_/self.thrust_scale_
 
         # yaw controller
         current_yaw = self.mav_state_current_[8]
