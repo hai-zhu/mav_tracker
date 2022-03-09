@@ -124,6 +124,10 @@ class Mav_Nmpc_Tracker:
         else:
             rospy.logwarn('Tracking mode is not correctly set!')
         self.mpc_u_ref_ = np.tile(np.array([0.0, 0.0, 1.0*g]).reshape((-1, 1)), (1, self.mpc_N_))
+        # for iStage in range(0, self.mpc_N_):
+        #     self.mpc_u_ref_[:, iStage] = np.array([0.0, 0.0, 0.0])
+        #     self.mpc_u_ref_[2, iStage] = 1.0*g
+
 
     def reset_acados_solver(self):
         # initial condition
