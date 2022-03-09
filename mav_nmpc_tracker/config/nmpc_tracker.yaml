@@ -4,7 +4,7 @@ N: 20
 
 # MAV dynamics param
 mass: 1.56
-thrust_scale: 20
+thrust_scale: 21.5 
 roll_time_constant: 0.3256
 roll_gain: 1.0234
 pitch_time_constant: 0.3249
@@ -13,17 +13,17 @@ drag_coefficient_x: 0.001
 drag_coefficient_y: 0.001
 
 # dynamic config default values
-q_x : 80
-q_y : 80
-q_z : 120
+q_x : 10.0
+q_y : 10.0
+q_z : 10.0
 
-q_vx : 80
-q_vy : 80
-q_vz : 100
+q_vx : 10.0
+q_vy : 10.0
+q_vz : 10.0
 
-r_roll  : 50
-r_pitch : 50
-r_thrust : 1
+r_roll  : 100.0
+r_pitch : 100.0
+r_thrust : 100.0
 
 roll_max: 25.0        # deg
 pitch_max: 25.0       # deg

@@ -89,7 +89,6 @@ def acados_mpc_solver_generation(mpc_form_param):
                  - (np.cos(roll)*np.cos(yaw) + np.sin(pitch)*np.sin(roll)*np.sin(yaw))*mpc_form_param.drag_coefficient_y*thrust_cmd*vy \
                  - np.cos(pitch)*np.sin(roll)*mpc_form_param.drag_coefficient_y*thrust_cmd*vz
 
-
     # dynamics
     dyn_f_expl = cd.vertcat(
         vx,
@@ -143,6 +142,9 @@ def acados_mpc_solver_generation(mpc_form_param):
     ocp.cost.W = np.diag([mpc_form_param.q_x, mpc_form_param.q_y, mpc_form_param.q_z,
                           mpc_form_param.q_vx, mpc_form_param.q_vy, mpc_form_param.q_vz,
                           mpc_form_param.r_roll, mpc_form_param.r_pitch, mpc_form_param.r_thrust])
+    # ocp.cost.W = np.diag([0.0, 0.0, 0.0,
+    #                     0.0, 0.0, 0.0,
+    #                     mpc_form_param.r_roll, mpc_form_param.r_pitch, mpc_form_param.r_thrust])
     ocp.cost.W_e = np.diag([mpc_form_param.q_x, mpc_form_param.q_y, mpc_form_param.q_z,
                             mpc_form_param.q_vx, mpc_form_param.q_vy, mpc_form_param.q_vz])
 

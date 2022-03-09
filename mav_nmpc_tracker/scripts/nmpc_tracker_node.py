@@ -58,11 +58,11 @@ class Mav_Nmpc_Tracker:
         self.mpc_solver_ = acados_mpc_solver_generation(self.mpc_form_param_)
 
         # ROS subscriber
-        # self.odom_sub_ = rospy.Subscriber("/mav_odometry", Odometry, self.set_odom)
+        # self.odom_sub_ = rospy.Subscriber("/mav_sim_odom", Odometry, self.set_odom)
         self.odom_sub_ = rospy.Subscriber("/mavros/local_position/odom_local", Odometry, self.set_odom)
         self.received_first_odom_ = False
         self.odom_received_time_ = rospy.Time.now()
-        # self.traj_sub_ = rospy.Subscriber("/mav_trajectory", MultiDOFJointTrajectory, self.set_traj_ref)
+        # self.traj_sub_ = rospy.Subscriber("/mav_sim_trajectory", MultiDOFJointTrajectory, self.set_traj_ref)
         self.traj_sub_ = rospy.Subscriber("/command/trajectory", MultiDOFJointTrajectory, self.set_traj_ref)
         self.traj_received_time_ = rospy.Time.now()
         self.traj_pos_ref_ = np.zeros((3, self.mpc_N_))
@@ -240,11 +240,20 @@ class Mav_Nmpc_Tracker:
         yawrate_cmd = self.mpc_form_param_.K_yaw * yaw_error
 
         # clip
-        roll_cmd = np.clip(roll_cmd, -self.mpc_form_param_.roll_max, self.mpc_form_param_.roll_max)
-        pitch_cmd = np.clip(pitch_cmd, -self.mpc_form_param_.pitch_max, self.mpc_form_param_.pitch_max)
-        yawrate_cmd = np.clip(yawrate_cmd, -self.mpc_form_param_.yawrate_max, self.mpc_form_param_.yawrate_max)
-        thrust_cmd = np.clip(thrust_cmd, self.mpc_form_param_.thrust_min*self.mass_/self.thrust_scale_, \
-            self.mpc_form_param_.thrust_max*self.mass_/self.thrust_scale_)
+        if np.abs(roll_cmd) > 1.05*self.mpc_form_param_.roll_max: 
+            rospy.logwarn('roll command is beyond limit!')
+            roll_cmd = np.clip(roll_cmd, -self.mpc_form_param_.roll_max, self.mpc_form_param_.roll_max)
+        if np.abs(pitch_cmd) > 1.05*self.mpc_form_param_.pitch_max: 
+            rospy.logwarn('pitch command is beyond limit!')
+            pitch_cmd = np.clip(pitch_cmd, -self.mpc_form_param_.pitch_max, self.mpc_form_param_.pitch_max)
+        if np.abs(yawrate_cmd) > 1.05*self.mpc_form_param_.yawrate_max: 
+            rospy.logwarn('yawrate command is beyond limit!')
+            yawrate_cmd = np.clip(yawrate_cmd, -self.mpc_form_param_.yawrate_max, self.mpc_form_param_.yawrate_max)
+        if thrust_cmd > 1.05*self.mpc_form_param_.thrust_max*self.mass_/self.thrust_scale_ or \
+            thrust_cmd < 0.95*self.mpc_form_param_.thrust_min*self.mass_/self.thrust_scale_: 
+            rospy.logwarn('thrust command is beyond limit!')
+            thrust_cmd = np.clip(thrust_cmd, self.mpc_form_param_.thrust_min*self.mass_/self.thrust_scale_, \
+                self.mpc_form_param_.thrust_max*self.mass_/self.thrust_scale_)
 
         # obtained command
         self.roll_pitch_yawrate_thrust_cmd_ = np.array([roll_cmd, pitch_cmd, yawrate_cmd, thrust_cmd])
@@ -347,8 +356,8 @@ def nmpc_tracker_control():
     # control bound
     mpc_form_param.roll_max = np.deg2rad(rospy.get_param("~roll_max"))
     mpc_form_param.pitch_max = np.deg2rad(rospy.get_param("~pitch_max"))
-    mpc_form_param.thrust_min = rospy.get_param("~thrust_min") * mpc_form_param.mass * g
-    mpc_form_param.thrust_max = rospy.get_param("~thrust_max") * mpc_form_param.mass * g
+    mpc_form_param.thrust_min = rospy.get_param("~thrust_min") * g
+    mpc_form_param.thrust_max = rospy.get_param("~thrust_max") * g
     mpc_form_param.K_yaw = rospy.get_param("~K_yaw")
     mpc_form_param.yawrate_max = np.deg2rad(rospy.get_param("~yawrate_max"))
     # cost weights

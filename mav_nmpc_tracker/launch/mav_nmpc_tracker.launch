@@ -5,7 +5,7 @@
         <rosparam file="$(find mav_nmpc_tracker)/config/nmpc_tracker.yaml" />
         <param name='tracking_mode' value='$(arg tracking_mode)'/>
         <param name='yaw_command_mode' value='$(arg yaw_command_mode)'/>
-        <!-- <remap from="/mav_odometry" to="/mavros/local_position/odom_local"/> -->
-        <!-- <remap from="/mav_trajectory" to="/command/trajectory"/> -->
+        <!-- <remap from="/mav_sim_odometry" to="/mavros/local_position/odom_local"/> -->
+        <!-- <remap from="/mav_sim_trajectory" to="/command/trajectory"/> -->
     </node>
 </launch>

@@ -8,6 +8,8 @@ Panels:
         - /Status1
         - /Grid1/Offset1
         - /MarkerArray1/Namespaces1
+        - /Odometry1
+        - /Odometry2
       Splitter Ratio: 0.5
     Tree Height: 319
   - Class: rviz/Selection
@@ -207,6 +209,41 @@ Visualization Manager:
         "": true
       Queue Size: 1
       Value: true
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 1
+      Name: Odometry
+      Position Tolerance: 0.10000000149011612
+      Queue Size: 10
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.10000000149011612
+        Color: 255; 25; 0
+        Head Length: 0.30000001192092896
+        Head Radius: 0.10000000149011612
+        Shaft Length: 1
+        Shaft Radius: 0.05000000074505806
+        Value: Axes
+      Topic: /mav_sim_odom
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 238; 238; 236
@@ -253,7 +290,7 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 0.6747970581054688
       Target Frame: <Fixed Frame>
-      Yaw: 3.990403175354004
+      Yaw: 3.695401191711426
     Saved: ~
 Window Geometry:
   Displays:
